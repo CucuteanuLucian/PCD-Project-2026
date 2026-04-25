@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Azure.Messaging.ServiceBus;
+using Conduit.Infrastructure.Messaging;
+
 
 // read database configuration (database provider + database connection) from environment variables
 //Environment.GetEnvironmentVariable(DEFAULT_DATABASE_PROVIDER)
@@ -85,6 +88,14 @@ builder.Services.AddSwaggerGen(x =>
     x.TagActionsBy(y => new List<string> { y.GroupName ?? throw new InvalidOperationException() });
     x.CustomSchemaIds(s => s.FullName?.Replace("+", "."));
 });
+
+builder.Services.AddSingleton(_ =>
+{
+    var cs = builder.Configuration["ConnectionStrings:ServiceBus"];
+    return new ServiceBusClient(cs);
+});
+
+builder.Services.AddScoped<IMessageBus, AzureServiceBusMessageBus>();
 
 builder.Services.AddCors();
 builder
