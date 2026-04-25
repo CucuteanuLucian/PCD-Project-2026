@@ -24,4 +24,8 @@ public class Comment
     public DateTime CreatedAt { get; init; }
 
     public DateTime UpdatedAt { get; init; }
+
+    public string Status { get; set; } = "pending";
+
+    public double? SentimentScore { get; set; }
 }

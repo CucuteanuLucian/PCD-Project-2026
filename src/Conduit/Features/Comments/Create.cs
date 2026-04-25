@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Conduit.Domain;
+using Conduit.Features.Comments;
 using Conduit.Infrastructure;
 using Conduit.Infrastructure.Errors;
 using FluentValidation;
@@ -21,11 +22,17 @@ public class Create
 
     public class CommandValidator : AbstractValidator<Command>
     {
-        public CommandValidator() => RuleFor(x => x.Model.Comment.Body).NotEmpty();
+        public CommandValidator()
+        {
+            RuleFor(x => x.Model.Comment.Body).NotEmpty();
+        }
     }
 
-    public class Handler(ConduitContext context, ICurrentUserAccessor currentUserAccessor)
-        : IRequestHandler<Command, CommentEnvelope>
+    public class Handler(
+        ConduitContext context,
+        ICurrentUserAccessor currentUserAccessor,
+        IMessageBus messageBus
+    ) : IRequestHandler<Command, CommentEnvelope>
     {
         public async Task<CommentEnvelope> Handle(
             Command message,
@@ -55,12 +62,23 @@ public class Create
                 Body = message.Model.Comment.Body ?? string.Empty,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
+                Status = "pending",
             };
-            await context.Comments.AddAsync(comment, cancellationToken);
 
+            await context.Comments.AddAsync(comment, cancellationToken);
             article.Comments.Add(comment);
 
             await context.SaveChangesAsync(cancellationToken);
+
+            // 🔥 EVENT-DRIVEN PART (5.1)
+            await messageBus.PublishAsync(
+                new CommentCreatedEvent
+                {
+                    CommentId = comment.CommentId,
+                    Content = comment.Body,
+                    ArticleId = article.ArticleId,
+                }
+            );
 
             return new CommentEnvelope(comment);
         }

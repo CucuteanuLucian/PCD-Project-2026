@@ -5,6 +5,7 @@ using Conduit.Features.Comments;
 using Conduit.Infrastructure.Errors;
 using Conduit.IntegrationTests.Features.Users;
 using Microsoft.EntityFrameworkCore;
+using Conduit.Infrastructure;
 
 namespace Conduit.IntegrationTests.Features.Comments;
 
@@ -38,8 +39,9 @@ public static class CommentHelpers
 
         var dbContext = fixture.GetDbContext();
         var currentAccessor = new StubCurrentUserAccessor(userName);
+        var messageBus = new FakeMessageBus();
 
-        var commentCreateHandler = new Create.Handler(dbContext, currentAccessor);
+        var commentCreateHandler = new Create.Handler(dbContext, currentAccessor, messageBus);
         var created = await commentCreateHandler.Handle(
             command,
             new System.Threading.CancellationToken()
