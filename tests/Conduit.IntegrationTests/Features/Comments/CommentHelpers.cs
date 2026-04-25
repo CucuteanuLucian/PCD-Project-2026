@@ -2,10 +2,10 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Conduit.Features.Comments;
+using Conduit.Infrastructure;
 using Conduit.Infrastructure.Errors;
 using Conduit.IntegrationTests.Features.Users;
 using Microsoft.EntityFrameworkCore;
-using Conduit.Infrastructure;
 
 namespace Conduit.IntegrationTests.Features.Comments;
 

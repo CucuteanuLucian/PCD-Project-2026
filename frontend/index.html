@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PCD – Real-time Comment Processing</title>
+
+  <!-- SignalR JS client (CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #16213e;
+      color: white;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    header h1 { font-size: 1.3rem; font-weight: 600; }
+    .badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-connected { background: #22c55e; color: white; }
+    .badge-disconnected { background: #ef4444; color: white; }
+    .badge-connecting { background: #f59e0b; color: white; }
+
+    .container {
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 640px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 24px;
+    }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #16213e;
+      border-bottom: 2px solid #f0f2f5;
+      padding-bottom: 10px;
+    }
+
+    /* Auth */
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 0.8rem; font-weight: 500; margin-bottom: 4px; color: #555; }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: #6366f1; }
+    textarea { resize: vertical; min-height: 80px; }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: #6366f1; color: white; }
+    .btn-success { background: #22c55e; color: white; }
+    .btn-small {
+      width: auto;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      margin-top: 6px;
+    }
+
+    .user-info {
+      display: none;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+    .user-info strong { color: #166534; }
+
+    /* Comments list */
+    .comments-list { display: flex; flex-direction: column; gap: 12px; }
+    .comment-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 14px;
+      transition: border-color 0.3s, background 0.3s;
+      position: relative;
+    }
+    .comment-item.pending { border-color: #fbbf24; background: #fffbeb; }
+    .comment-item.processed { border-color: #34d399; background: #f0fdf4; }
+
+    .comment-body { font-size: 0.9rem; margin-bottom: 8px; color: #374151; }
+    .comment-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 0.78rem;
+      color: #6b7280;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-processed { background: #d1fae5; color: #065f46; }
+
+    .sentiment {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 600;
+      font-size: 0.82rem;
+    }
+    .sentiment.positive { color: #059669; }
+    .sentiment.negative { color: #dc2626; }
+    .sentiment.neutral { color: #6b7280; }
+
+    .latency {
+      font-size: 0.72rem;
+      color: #9ca3af;
+    }
+
+    /* Notification toast */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 999;
+    }
+    .toast {
+      background: #16213e;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s ease;
+      max-width: 300px;
+    }
+    .toast.success { background: #065f46; border-left: 4px solid #34d399; }
+    .toast.error { background: #7f1d1d; border-left: 4px solid #ef4444; }
+    @keyframes slideIn {
+      from { transform: translateX(100px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Metrics */
+    .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+    .metric-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      text-align: center;
+    }
+    .metric-value { font-size: 1.4rem; font-weight: 700; color: #6366f1; }
+    .metric-label { font-size: 0.72rem; color: #6b7280; margin-top: 2px; }
+
+    .col-span-2 { grid-column: span 2; }
+
+    #articles-loading { font-size: 0.85rem; color: #6b7280; text-align: center; padding: 20px; }
+    .empty { text-align: center; color: #9ca3af; font-size: 0.85rem; padding: 20px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>PCD – Real-time Comment Processing</h1>
+  <span class="badge badge-disconnected" id="ws-status">Disconnected</span>
+</header>
+
+<div class="container">
+
+  <!-- AUTH CARD -->
+  <div class="card">
+    <h2>1. Autentificare</h2>
+    <div id="auth-form">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="test@test.com" value="test@test.com" />
+      </div>
+      <div class="form-group">
+        <label>Parolă</label>
+        <input type="password" id="password" placeholder="testpassword" value="testpassword" />
+      </div>
+      <button class="btn-primary" onclick="login()">Login</button>
+      <button class="btn-success" style="margin-top:8px" onclick="register()">Register (cont nou)</button>
+    </div>
+    <div class="user-info" id="user-info">
+      Autentificat ca <strong id="username-display"></strong>
+      <br/>
+      <button class="btn-small btn-primary" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- POST COMMENT CARD -->
+  <div class="card">
+    <h2>2. Postează comentariu</h2>
+    <div class="form-group">
+      <label>Articol (slug)</label>
+      <select id="article-slug">
+        <option value="">-- selectează sau scrie mai jos --</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Sau introdu slug manual</label>
+      <input type="text" id="article-slug-manual" placeholder="ex: how-to-train-your-dragon" />
+    </div>
+    <div class="form-group">
+      <label>Comentariu</label>
+      <textarea id="comment-body" placeholder="Scrie comentariul tău..."></textarea>
+    </div>
+    <button class="btn-primary" onclick="postComment()" id="post-btn" disabled>Postează (→ pending)</button>
+  </div>
+
+  <!-- METRICS CARD -->
+  <div class="card">
+    <h2>Metrici în timp real</h2>
+    <div class="metrics">
+      <div class="metric-box">
+        <div class="metric-value" id="metric-total">0</div>
+        <div class="metric-label">Comentarii postate</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-value" id="metric-processed">0</div>
+        <div class="metric-label">Procesate</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-value" id="metric-avg-latency">—</div>
+        <div class="metric-label">Latență medie (ms)</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-value" id="metric-avg-sentiment">—</div>
+        <div class="metric-label">Scor sentiment mediu</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMENTS LIST CARD -->
+  <div class="card">
+    <h2>Comentarii (live status)</h2>
+    <div class="comments-list" id="comments-list">
+      <div class="empty">Postează un comentariu pentru a vedea statusul live.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+  // ─── CONFIG ──────────────────────────────────────────────────────────
+  const API_URL = 'http://localhost:5000/api';
+  const NOTIFICATION_URL = 'http://localhost:5001';
+  // ─────────────────────────────────────────────────────────────────────
+
+  let token = localStorage.getItem('jwt') || null;
+  let currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+  let connection = null;
+
+  // State local: comentariile din sesiunea curentă
+  // { commentId, body, slug, status, sentimentScore, postedAtMs }
+  const comments = new Map();
+
+  // Metrici
+  const metrics = { total: 0, processed: 0, latencies: [], sentiments: [] };
+
+  // ─── INIT ─────────────────────────────────────────────────────────────
+  window.onload = () => {
+    if (token && currentUser) {
+      showLoggedIn();
+      connectSignalR();
+      loadArticles();
+    }
+  };
+
+  // ─── AUTH ─────────────────────────────────────────────────────────────
+  async function register() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const username = email.split('@')[0].replace(/[^a-z0-9]/gi, '');
+    const res = await fetch(`${API_URL}/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user: { email, password, username } })
+    });
+    if (res.ok) {
+      showToast('Cont creat! Fă login.', 'success');
+    } else {
+      const err = await res.json();
+      showToast('Eroare register: ' + JSON.stringify(err.errors || err), 'error');
+    }
+  }
+
+  async function login() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const res = await fetch(`${API_URL}/users/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user: { email, password } })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      token = data.user.token;
+      currentUser = data.user;
+      localStorage.setItem('jwt', token);
+      localStorage.setItem('user', JSON.stringify(currentUser));
+      showLoggedIn();
+      connectSignalR();
+      loadArticles();
+      showToast(`Bun venit, ${currentUser.username}!`, 'success');
+    } else {
+      showToast('Login eșuat. Verifică credențialele.', 'error');
+    }
+  }
+
+  function logout() {
+    token = null; currentUser = null;
+    localStorage.removeItem('jwt');
+    localStorage.removeItem('user');
+    if (connection) connection.stop();
+    document.getElementById('auth-form').style.display = 'block';
+    document.getElementById('user-info').style.display = 'none';
+    document.getElementById('post-btn').disabled = true;
+    updateWsStatus('disconnected');
+  }
+
+  function showLoggedIn() {
+    document.getElementById('auth-form').style.display = 'none';
+    document.getElementById('user-info').style.display = 'block';
+    document.getElementById('username-display').textContent = currentUser.username;
+    document.getElementById('post-btn').disabled = false;
+  }
+
+  // ─── ARTICLES ─────────────────────────────────────────────────────────
+  async function loadArticles() {
+    try {
+      const res = await fetch(`${API_URL}/articles?limit=20`, {
+        headers: { Authorization: `Token ${token}` }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const select = document.getElementById('article-slug');
+      select.innerHTML = '<option value="">-- selectează articol --</option>';
+      (data.articles || []).forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.slug;
+        opt.textContent = `${a.title} (${a.slug})`;
+        select.appendChild(opt);
+      });
+    } catch (_) { /* ignore */ }
+  }
+
+  // ─── POST COMMENT ─────────────────────────────────────────────────────
+  async function postComment() {
+    if (!token) return showToast('Trebuie să fii autentificat.', 'error');
+
+    const slug = document.getElementById('article-slug').value
+      || document.getElementById('article-slug-manual').value.trim();
+    const body = document.getElementById('comment-body').value.trim();
+
+    if (!slug) return showToast('Selectează sau introdu un slug de articol.', 'error');
+    if (!body) return showToast('Comentariul nu poate fi gol.', 'error');
+
+    const btn = document.getElementById('post-btn');
+    btn.disabled = true;
+    btn.textContent = 'Se trimite...';
+
+    try {
+      const postedAtMs = Date.now();
+      const res = await fetch(`${API_URL}/articles/${slug}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Token ${token}`
+        },
+        body: JSON.stringify({ comment: { body } })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const commentId = data.comment.id;
+
+        // Adaugă în state local
+        comments.set(commentId, {
+          commentId,
+          body,
+          slug,
+          status: 'pending',
+          sentimentScore: null,
+          postedAtMs
+        });
+
+        metrics.total++;
+        updateMetrics();
+        renderComments();
+
+        document.getElementById('comment-body').value = '';
+        showToast(`Comentariu trimis! ID: ${commentId} — se procesează...`, 'success');
+      } else {
+        const err = await res.json();
+        showToast('Eroare: ' + JSON.stringify(err), 'error');
+      }
+    } catch (e) {
+      showToast('Eroare de rețea: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Postează (→ pending)';
+    }
+  }
+
+  // ─── SIGNALR ──────────────────────────────────────────────────────────
+  function connectSignalR() {
+    if (connection) connection.stop();
+    updateWsStatus('connecting');
+
+    connection = new signalR.HubConnectionBuilder()
+      .withUrl(`${NOTIFICATION_URL}/hubs/comments`)
+      .withAutomaticReconnect()
+      .configureLogging(signalR.LogLevel.Warning)
+      .build();
+
+    connection.on('CommentProcessed', (data) => {
+      const c = comments.get(data.commentId);
+      if (!c) return;
+
+      const latencyMs = data.receivedAtMs - c.postedAtMs;
+
+      // Actualizează state
+      c.status = 'processed';
+      c.sentimentScore = data.sentimentScore;
+      c.latencyMs = latencyMs;
+
+      metrics.processed++;
+      metrics.latencies.push(latencyMs);
+      metrics.sentiments.push(data.sentimentScore);
+      updateMetrics();
+      renderComments();
+
+      const emoji = sentimentEmoji(data.sentimentScore);
+      showToast(
+        `Comentariu #${data.commentId} procesat! ${emoji} Scor: ${data.sentimentScore.toFixed(2)} | Latență: ${latencyMs}ms`,
+        'success'
+      );
+    });
+
+    connection.onreconnecting(() => updateWsStatus('connecting'));
+    connection.onreconnected(() => {
+      updateWsStatus('connected');
+      subscribeUser();
+    });
+    connection.onclose(() => updateWsStatus('disconnected'));
+
+    connection.start()
+      .then(() => {
+        updateWsStatus('connected');
+        subscribeUser();
+      })
+      .catch(e => {
+        updateWsStatus('disconnected');
+        console.warn('SignalR connection failed:', e.message);
+      });
+  }
+
+  function subscribeUser() {
+    if (currentUser && connection.state === 'Connected') {
+      connection.invoke('SubscribeToUser', String(currentUser.id || currentUser.username))
+        .catch(e => console.warn('SubscribeToUser failed:', e));
+    }
+  }
+
+  // ─── RENDER ───────────────────────────────────────────────────────────
+  function renderComments() {
+    const container = document.getElementById('comments-list');
+    if (comments.size === 0) {
+      container.innerHTML = '<div class="empty">Postează un comentariu pentru a vedea statusul live.</div>';
+      return;
+    }
+
+    const items = [...comments.values()].reverse();
+    container.innerHTML = items.map(c => `
+      <div class="comment-item ${c.status}">
+        <div class="comment-body">${escapeHtml(c.body)}</div>
+        <div class="comment-meta">
+          <span>#${c.commentId}</span>
+          <span>/${c.slug}</span>
+          <span class="status-badge status-${c.status}">
+            ${c.status === 'pending' ? '⏳ pending' : '✅ processed'}
+          </span>
+          ${c.sentimentScore !== null ? `
+            <span class="sentiment ${sentimentClass(c.sentimentScore)}">
+              ${sentimentEmoji(c.sentimentScore)} ${c.sentimentScore.toFixed(2)}
+            </span>` : ''}
+          ${c.latencyMs !== undefined ? `
+            <span class="latency">⚡ ${c.latencyMs}ms</span>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function updateMetrics() {
+    document.getElementById('metric-total').textContent = metrics.total;
+    document.getElementById('metric-processed').textContent = metrics.processed;
+
+    if (metrics.latencies.length > 0) {
+      const avg = Math.round(metrics.latencies.reduce((a, b) => a + b, 0) / metrics.latencies.length);
+      document.getElementById('metric-avg-latency').textContent = avg + 'ms';
+    }
+
+    if (metrics.sentiments.length > 0) {
+      const avg = (metrics.sentiments.reduce((a, b) => a + b, 0) / metrics.sentiments.length).toFixed(2);
+      document.getElementById('metric-avg-sentiment').textContent = avg;
+    }
+  }
+
+  // ─── UTILS ────────────────────────────────────────────────────────────
+  function updateWsStatus(state) {
+    const el = document.getElementById('ws-status');
+    el.className = 'badge';
+    if (state === 'connected') {
+      el.classList.add('badge-connected');
+      el.textContent = 'SignalR Connected';
+    } else if (state === 'connecting') {
+      el.classList.add('badge-connecting');
+      el.textContent = 'Connecting...';
+    } else {
+      el.classList.add('badge-disconnected');
+      el.textContent = 'Disconnected';
+    }
+  }
+
+  function showToast(msg, type = '') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  }
+
+  function sentimentEmoji(score) {
+    if (score >= 0.3) return '😊';
+    if (score <= -0.3) return '😞';
+    return '😐';
+  }
+
+  function sentimentClass(score) {
+    if (score >= 0.3) return 'positive';
+    if (score <= -0.3) return 'negative';
+    return 'neutral';
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+</script>
+</body>
+</html>
