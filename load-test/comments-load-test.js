@@ -3,7 +3,7 @@ import { check, sleep } from 'k6';
 import { Rate, Trend, Counter } from 'k6/metrics';
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const API_URL = 'https://pcd-realworld-api.azurewebsites.net/api';
+const API_URL = 'https://pcd-realworld-api.azurewebsites.net';
 
 // Custom metrics
 const errorRate = new Rate('error_rate');
