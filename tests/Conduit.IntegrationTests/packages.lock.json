@@ -482,6 +482,7 @@
           "Microsoft.EntityFrameworkCore.InMemory": "[10.0.2, )",
           "Microsoft.EntityFrameworkCore.SqlServer": "[10.0.2, )",
           "Microsoft.EntityFrameworkCore.Sqlite": "[10.0.2, )",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.0-preview.5, )",
           "Serilog": "[4.3.0, )",
           "Serilog.Extensions.Logging": "[8.0.0, )",
           "Serilog.Sinks.Console": "[6.0.0, )",
@@ -582,6 +583,26 @@
           "Microsoft.Extensions.Caching.Memory": "10.0.2",
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.2",
           "Microsoft.Extensions.Logging": "10.0.2"
+        }
+      },
+      "Npgsql": {
+        "type": "CentralTransitive",
+        "requested": "[9.0.3, )",
+        "resolved": "9.0.3",
+        "contentHash": "tPvY61CxOAWxNsKLEBg+oR646X4Bc8UmyQ/tJszL/7mEmIXQnnBhVJZrZEEUv0Bstu0mEsHZD5At3EO8zQRAYw==",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.2"
+        }
+      },
+      "Npgsql.EntityFrameworkCore.PostgreSQL": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.0-preview.5, )",
+        "resolved": "10.0.0-preview.5",
+        "contentHash": "c3St573jBTUI00pyZDVG2E/P1tFf4YSxXuQaKEqU/xU1C+eNaRcHhhjQBKSD7x5whsf/9NQwA76fds8kXj0zJw==",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "10.0.0-preview.5.25277.114",
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.0-preview.5.25277.114",
+          "Npgsql": "9.0.3"
         }
       },
       "Serilog": {

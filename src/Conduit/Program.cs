@@ -14,8 +14,10 @@ using Microsoft.OpenApi.Models;
 // read database configuration (database provider + database connection) from environment variables
 //Environment.GetEnvironmentVariable(DEFAULT_DATABASE_PROVIDER)
 //Environment.GetEnvironmentVariable(DEFAULT_DATABASE_CONNECTION_STRING)
-var defaultDatabaseConnectionString = "Filename=realworld.db";
-var defaultDatabaseProvider = "sqlite";
+var defaultDatabaseConnectionString =
+    Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+    ?? "Filename=realworld.db";
+var defaultDatabaseProvider = Environment.GetEnvironmentVariable("DatabaseProvider") ?? "sqlite";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +39,12 @@ builder.Services.AddDbContext<ConduitContext>(options =>
     {
         // only works in windows container
         options.UseSqlServer(connectionString);
+    }
+    else if (
+        databaseProvider.ToLowerInvariant().Trim().Equals("postgresql", StringComparison.Ordinal)
+    )
+    {
+        options.UseNpgsql(connectionString);
     }
     else
     {
@@ -136,9 +144,16 @@ app.UseSwaggerUI(x => x.SwaggerEndpoint("/swagger/v1/swagger.json", "RealWorld A
 
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope
-        .ServiceProvider.GetRequiredService<ConduitContext>()
-        .Database.EnsureCreated();
-    // use context
+    try
+    {
+        scope.ServiceProvider.GetRequiredService<ConduitContext>().Database.EnsureCreated();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope
+            .ServiceProvider.GetRequiredService<ILoggerFactory>()
+            .CreateLogger("Startup");
+        logger.LogError(ex, "Could not initialize database. App will still start.");
+    }
 }
 app.Run();
