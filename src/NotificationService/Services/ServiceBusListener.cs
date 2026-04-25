@@ -11,17 +11,17 @@ namespace NotificationService.Services;
 public class ServiceBusListener(
     IHubContext<CommentHub> hubContext,
     ILogger<ServiceBusListener> logger,
-    ServiceBusClient client) : BackgroundService
+    ServiceBusClient client
+) : BackgroundService
 {
     private ServiceBusProcessor? _processor;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _processor = client.CreateProcessor("comments-processed", new ServiceBusProcessorOptions
-        {
-            MaxConcurrentCalls = 5,
-            AutoCompleteMessages = false
-        });
+        _processor = client.CreateProcessor(
+            "comments-processed",
+            new ServiceBusProcessorOptions { MaxConcurrentCalls = 5, AutoCompleteMessages = false }
+        );
 
         _processor.ProcessMessageAsync += HandleMessageAsync;
         _processor.ProcessErrorAsync += HandleErrorAsync;
@@ -42,7 +42,11 @@ public class ServiceBusListener(
 
             if (evt == null)
             {
-                await args.DeadLetterMessageAsync(args.Message, "DeserializationFailed", "Could not deserialize message");
+                await args.DeadLetterMessageAsync(
+                    args.Message,
+                    "DeserializationFailed",
+                    "Could not deserialize message"
+                );
                 return;
             }
 
@@ -51,19 +55,23 @@ public class ServiceBusListener(
                 logger.LogInformation(
                     "Received CommentProcessedEvent: CommentId={CommentId}, Score={Score}",
                     evt.CommentId,
-                    evt.SentimentScore);
+                    evt.SentimentScore
+                );
             }
 
             // Trimite notificarea prin SignalR grupului de user
-            await hubContext.Clients
-                .Group($"user-{evt.UserId}")
-                .SendAsync("CommentProcessed", new
-                {
-                    commentId = evt.CommentId,
-                    status = evt.Status,
-                    sentimentScore = evt.SentimentScore,
-                    receivedAtMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-                });
+            await hubContext
+                .Clients.Group($"user-{evt.UserId}")
+                .SendAsync(
+                    "CommentProcessed",
+                    new
+                    {
+                        commentId = evt.CommentId,
+                        status = evt.Status,
+                        sentimentScore = evt.SentimentScore,
+                        receivedAtMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                    }
+                );
 
             await args.CompleteMessageAsync(args.Message);
         }

@@ -25,7 +25,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddSignalR();
 
 // Azure Service Bus client — conectare la namespace
-var serviceBusConnectionString = builder.Configuration["ConnectionStrings:ServiceBus"]
+var serviceBusConnectionString =
+    builder.Configuration["ConnectionStrings:ServiceBus"]
     ?? throw new InvalidOperationException("ServiceBus connection string is missing");
 
 builder.Services.AddSingleton(_ => new ServiceBusClient(serviceBusConnectionString));
@@ -38,7 +39,10 @@ var app = builder.Build();
 app.UseCors();
 
 // Endpoint health check — util pentru Azure App Service
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", service = "NotificationService" }));
+app.MapGet(
+    "/health",
+    () => Results.Ok(new { status = "healthy", service = "NotificationService" })
+);
 
 // Hub SignalR — clienții se conectează la /hubs/comments
 app.MapHub<CommentHub>("/hubs/comments");
