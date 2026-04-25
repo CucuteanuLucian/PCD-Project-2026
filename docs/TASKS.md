@@ -5,7 +5,7 @@
 | Serviciu | Responsabil | Status |
 |---|---|---|
 | Service A – RealWorld API (extins) | Echipă | ✅ Done |
-| Service B – Azure Function (Sentiment) | Echipă | ⏳ In Progress |
+| Service B – Azure Function (Sentiment) | Cosmin | ✅ Done |
 | Service C – Notification Service (SignalR) | Cosmin | ✅ Done |
 | Frontend – HTML + Vanilla JS | Cosmin | ✅ Done |
 | Azure Setup (Service Bus, PostgreSQL, App Service) | Cosmin | ✅ Done (parțial) |
