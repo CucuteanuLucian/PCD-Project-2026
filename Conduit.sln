@@ -32,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{79EC8D73
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "src\NotificationService\NotificationService.csproj", "{21E6A332-33E8-4DE6-B682-51C6A8DAA22E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SentimentProcessor", "src\SentimentProcessor\SentimentProcessor.csproj", "{A38E5C10-1688-47DB-AB41-0FC6643707C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +92,18 @@ Global
 		{21E6A332-33E8-4DE6-B682-51C6A8DAA22E}.Release|x64.Build.0 = Release|Any CPU
 		{21E6A332-33E8-4DE6-B682-51C6A8DAA22E}.Release|x86.ActiveCfg = Release|Any CPU
 		{21E6A332-33E8-4DE6-B682-51C6A8DAA22E}.Release|x86.Build.0 = Release|Any CPU
+		{A38E5C10-1688-47DB-AB41-0FC6643707C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A38E5C10-1688-47DB-AB41-0FC6643707C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A38E5C10-1688-47DB-AB41-0FC6643707C6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A38E5C10-1688-47DB-AB41-0FC6643707C6}.Debug|x64.Build.0 = Debug|Any CPU
+		{A38E5C10-1688-47DB-AB41-0FC6643707C6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A38E5C10-1688-47DB-AB41-0FC6643707C6}.Debug|x86.Build.0 = Debug|Any CPU
+		{A38E5C10-1688-47DB-AB41-0FC6643707C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A38E5C10-1688-47DB-AB41-0FC6643707C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A38E5C10-1688-47DB-AB41-0FC6643707C6}.Release|x64.ActiveCfg = Release|Any CPU
+		{A38E5C10-1688-47DB-AB41-0FC6643707C6}.Release|x64.Build.0 = Release|Any CPU
+		{A38E5C10-1688-47DB-AB41-0FC6643707C6}.Release|x86.ActiveCfg = Release|Any CPU
+		{A38E5C10-1688-47DB-AB41-0FC6643707C6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,5 +113,6 @@ Global
 		{CFFDDBF0-5CDD-4D88-A82B-68CBF2432999} = {9F832627-4D82-4B5B-84A7-244E8480845E}
 		{1A67215E-3B6F-4FDA-AB9B-D2ECDC676A29} = {79EC8D73-8DAD-430E-93CE-C1F29DBC33FA}
 		{21E6A332-33E8-4DE6-B682-51C6A8DAA22E} = {7C288D93-2148-4679-9890-DBFCA0C59BCC}
+		{A38E5C10-1688-47DB-AB41-0FC6643707C6} = {7C288D93-2148-4679-9890-DBFCA0C59BCC}
 	EndGlobalSection
 EndGlobal
