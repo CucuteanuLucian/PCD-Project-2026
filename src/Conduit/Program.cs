@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
+using Azure.Messaging.ServiceBus;
 using Conduit;
 using Conduit.Infrastructure;
 using Conduit.Infrastructure.Errors;
+using Conduit.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using Azure.Messaging.ServiceBus;
-using Conduit.Infrastructure.Messaging;
-
 
 // read database configuration (database provider + database connection) from environment variables
 //Environment.GetEnvironmentVariable(DEFAULT_DATABASE_PROVIDER)

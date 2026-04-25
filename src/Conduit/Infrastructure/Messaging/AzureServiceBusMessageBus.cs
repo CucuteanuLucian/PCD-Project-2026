@@ -1,6 +1,6 @@
-using Azure.Messaging.ServiceBus;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Azure.Messaging.ServiceBus;
 using Conduit.Features.Comments;
 
 namespace Conduit.Infrastructure.Messaging;
@@ -13,9 +13,8 @@ public class AzureServiceBusMessageBus(ServiceBusClient client) : IMessageBus
     {
         var json = JsonSerializer.Serialize(message);
 
-        await _sender.SendMessageAsync(new ServiceBusMessage(json)
-        {
-            ContentType = "application/json"
-        });
+        await _sender.SendMessageAsync(
+            new ServiceBusMessage(json) { ContentType = "application/json" }
+        );
     }
 }
