@@ -298,7 +298,7 @@
 
 <script>
   // ─── CONFIG ──────────────────────────────────────────────────────────
-  const API_URL = 'https://pcd-realworld-api.azurewebsites.net/api';
+  const API_URL = 'https://pcd-realworld-api.azurewebsites.net';
   const NOTIFICATION_URL = 'https://pcd-notification-service.azurewebsites.net';
   // ─────────────────────────────────────────────────────────────────────
 
@@ -383,21 +383,7 @@
 
   // ─── ARTICLES ─────────────────────────────────────────────────────────
   async function loadArticles() {
-    try {
-      const res = await fetch(`${API_URL}/articles?limit=20`, {
-        headers: { Authorization: `Token ${token}` }
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      const select = document.getElementById('article-slug');
-      select.innerHTML = '<option value="">-- selectează articol --</option>';
-      (data.articles || []).forEach(a => {
-        const opt = document.createElement('option');
-        opt.value = a.slug;
-        opt.textContent = `${a.title} (${a.slug})`;
-        select.appendChild(opt);
-      });
-    } catch (_) { /* ignore */ }
+    // Articles list endpoint requires non-nullable params — skip dropdown, use manual slug input
   }
 
   // ─── POST COMMENT ─────────────────────────────────────────────────────

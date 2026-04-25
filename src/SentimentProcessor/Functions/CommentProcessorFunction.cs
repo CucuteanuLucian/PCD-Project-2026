@@ -90,7 +90,7 @@ public class CommentProcessorFunction(ILogger<CommentProcessorFunction> logger)
             """
             SELECT c."AuthorId", p."Username"
             FROM "Comments" c
-            JOIN "Persons" p ON p."Id" = c."AuthorId"
+            JOIN "Persons" p ON p."PersonId" = c."AuthorId"
             WHERE c."CommentId" = @id
             """,
             conn
