@@ -290,3 +290,4 @@ tools
 *.db
 .env.azure
 local.settings.json
+*.zip
