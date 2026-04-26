@@ -1,7 +1,7 @@
 # Distributed Comment Processing System with Sentiment Analysis and Real-Time Notifications
 
 **Concurrent and Distributed Programming – Project 2, 2025-2026**  
-**Team:** Stan Cosmin-Ioan, Cucuteanu Lucian, Dragos Catalin-Gabriel, Sacara Samuel-Carlos 
+**Team:** Stan Cosmin-Ioan, Cucuteanu Lucian-Andrei, Dragos Gabriel-Catalin, Sacara Samuel-Carlos
 **Date:** April 27, 2026  
 **Repository:** https://github.com/CucuteanuLucian/PCD-Project-2026
 
