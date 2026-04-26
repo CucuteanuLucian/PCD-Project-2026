@@ -8,9 +8,9 @@
 | Service B – Azure Function (Sentiment) | Cosmin | ✅ Done |
 | Service C – Notification Service (SignalR) | Cosmin | ✅ Done |
 | Frontend – HTML + Vanilla JS | Cosmin | ✅ Done |
-| Azure Setup (Service Bus, PostgreSQL, App Service) | Cosmin | ✅ Done (parțial) |
-| Load Testing (k6) | Cosmin | 🔲 Todo |
-| Raport științific | Toată echipa | 🔲 Todo |
+| Azure Setup (Service Bus, PostgreSQL, App Service) | Cosmin | ✅ Done |
+| Load Testing (k6) | Cosmin | ✅ Done |
+| Raport științific | Toată echipa | ✅ Done |
 
 ---
 
@@ -25,7 +25,7 @@
 - [ ] Endpoint `GET /api/articles/{slug}/comments/{id}` → returnează status + sentiment score
 - [ ] Switchare la PostgreSQL (în loc de SQLite) pentru Azure
 
-### ⏳ T2 – Service B: Azure Function – Sentiment Processor
+### ✅ T2 – Service B: Azure Function – Sentiment Processor
 - [ ] Proiect Azure Functions (.NET 10) creat
 - [ ] Trigger pe coada `comments-queue` din Service Bus
 - [ ] Algoritm sentiment simplu (cuvinte pozitive/negative)
@@ -51,7 +51,7 @@
 - [x] Listă comentarii cu scoruri
 - [x] Metrici live: latență end-to-end, throughput, sentiment mediu
 
-### 🔲 T5 – Azure Setup
+### ✅ T5 – Azure Setup
 - [ ] Cont Azure creat (free trial)
 - [ ] Resource Group creat: `pcd-project-rg`
 - [ ] Azure Service Bus Namespace + queue `comments-queue` + queue `comments-processed`
@@ -62,7 +62,7 @@
 - [ ] Azure Function App pentru Service B
 - [ ] Connection strings configurate în fiecare serviciu
 
-### 🔲 T6 – Load Testing
+### ✅ T6 – Load Testing
 - [ ] k6 instalat
 - [ ] Script `load-test/comments-load-test.js` creat
 - [ ] Test: 50 users concurenți, 2 minute
@@ -70,7 +70,7 @@
 - [ ] Grafice generate
 - [ ] Rezultate documentate
 
-### 🔲 T7 – Raport științific (PDF, min 2000 cuvinte)
+### ✅ T7 – Raport științific (PDF, min 2000 cuvinte)
 - [ ] 1. Arhitectura sistemului (diagramă Mermaid)
 - [ ] 2. Analiza comunicării (sincron vs. asincron)
 - [ ] 3. Analiza consistenței (CAP theorem, eventual consistency)
