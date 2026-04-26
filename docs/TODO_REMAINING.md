@@ -1,9 +1,5 @@
 # TODO – Ce mai rămâne de făcut
 
-> Ultima actualizare: 25 aprilie 2026
-
----
-
 ## 🔴 BLOCKER – Service A trebuie fixat (Echipa)
 
 Service A are SQLite hardcodat în `Program.cs`. Trebuie schimbat să suporte PostgreSQL
