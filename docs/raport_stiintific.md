@@ -1,8 +1,8 @@
 # Sistem Distribuit de Procesare a Comentariilor cu Analiză Sentiment și Notificări în Timp Real
 
 **Programare Concurentă și Distribuită – Proiect 2, 2025-2026**  
-**Echipa:** Stan Cosmin-Ioan, Cucuteanu Lucian, [Membru 3], [Membru 4]  
-**Data:** 25 Aprilie 2026  
+**Echipa:** Stan Cosmin-Ioan, Cucuteanu Lucian-Andrei, Dragos Catalin-Gabriel, Sacara Samuel-Carlos  
+**Data:** 27 Aprilie 2026  
 **Repo:** https://github.com/CucuteanuLucian/PCD-Project-2026
 
 ---
