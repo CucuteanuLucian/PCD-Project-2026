@@ -291,3 +291,4 @@ tools
 .env.azure
 local.settings.json
 *.zip
+.env.local

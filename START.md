@@ -13,7 +13,15 @@ git clone <url-repo>
 cd PCD-Project-2026
 ```
 
-### 2. Pornește toate serviciile
+### 2. Creează fișierul `.env.local` cu credențialele Azure
+```bash
+cat > .env.local << 'EOF'
+SERVICE_BUS_CONNECTION_STRING=<primit de la coleg>
+POSTGRES_CONNECTION_STRING=<primit de la coleg>
+EOF
+```
+
+### 3. Pornește toate serviciile
 ```bash
 ./start.sh
 ```
@@ -26,12 +34,12 @@ Scriptul pornește automat:
 
 Așteaptă ~20 secunde până apare mesajul `GATA!`.
 
-### 3. Deschide browserul
+### 4. Deschide browserul
 ```
 http://localhost:3000
 ```
 
-### 4. Testează
+### 5. Testează
 1. Înregistrează-te cu email/parolă (orice valori)
 2. La câmpul **Articol (slug)** scrie: `demo-pcd-2026`
 3. Scrie un comentariu și apasă **Postează**
@@ -54,6 +62,3 @@ chmod +x start.sh
 lsof -ti:5000,5001,3000 | xargs kill -9
 ./start.sh
 ```
-
-**Service C — SignalR DISCONNECTED în browser**
-— Așteaptă 20-30 secunde, se reconectează automat. Dacă nu, oprește și repornește `./start.sh`.

@@ -1,8 +1,13 @@
 #!/bin/bash
 set -e
 
-SB_CONN="<SERVICE_BUS_CONNECTION_STRING>"
-PG_CONN="<POSTGRES_CONNECTION_STRING>"
+# Citește din .env.local dacă există, altfel din variabile de mediu
+if [ -f "$(dirname "$0")/.env.local" ]; then
+  source "$(dirname "$0")/.env.local"
+fi
+
+SB_CONN="${SERVICE_BUS_CONNECTION_STRING:?Lipseste SERVICE_BUS_CONNECTION_STRING din .env.local}"
+PG_CONN="${POSTGRES_CONNECTION_STRING:?Lipseste POSTGRES_CONNECTION_STRING din .env.local}"
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 LOGS="$ROOT/.logs"

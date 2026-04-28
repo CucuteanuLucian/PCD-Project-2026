@@ -5,9 +5,9 @@ using Npgsql;
 var builder = WebApplication.CreateBuilder(args);
 
 var sbConn = Environment.GetEnvironmentVariable("ConnectionStrings__ServiceBus")
-    ?? "Endpoint=sb://pcd-servicebus-ns.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=REDACTED";
+    ?? throw new InvalidOperationException("ConnectionStrings__ServiceBus not set");
 var pgConn = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
-    ?? "Host=pcd-postgres-server.postgres.database.azure.com;Database=conduit;Username=pcdadmin;Password=REDACTED;SslMode=Require";
+    ?? throw new InvalidOperationException("ConnectionStrings__DefaultConnection not set");
 
 builder.Services.AddSingleton(_ => NpgsqlDataSource.Create(pgConn));
 builder.Services.AddSingleton(_ => new ServiceBusClient(sbConn));
