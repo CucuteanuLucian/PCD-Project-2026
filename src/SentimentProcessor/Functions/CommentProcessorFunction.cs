@@ -8,7 +8,7 @@ using SentimentProcessor.Services;
 
 namespace SentimentProcessor.Functions;
 
-public class CommentProcessorFunction(ILogger<CommentProcessorFunction> logger)
+public class CommentProcessorFunction(ILogger<CommentProcessorFunction> logger, NpgsqlDataSource db)
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -33,26 +33,43 @@ public class CommentProcessorFunction(ILogger<CommentProcessorFunction> logger)
             throw new InvalidOperationException("Cannot deserialize CommentCreatedEvent");
         }
 
-        var pgConn = Environment.GetEnvironmentVariable("PostgresConnection")!;
+        // Single query: get status + author in one round-trip, idempotency check included
+        await using var cmd = db.CreateCommand("""
+            SELECT c."Status", p."Username"
+            FROM "Comments" c
+            JOIN "Persons" p ON p."PersonId" = c."AuthorId"
+            WHERE c."CommentId" = @id
+            """);
+        cmd.Parameters.AddWithValue("id", evt.CommentId);
+        await using var reader = await cmd.ExecuteReaderAsync();
 
-        // Idempotenta — verificam daca comentariul a fost deja procesat
-        var currentStatus = await GetCommentStatusAsync(pgConn, evt.CommentId);
-        if (currentStatus != "pending")
+        if (!await reader.ReadAsync())
         {
-            logger.LogWarning(
-                "Comment {CommentId} already processed (status={Status}), skipping",
-                evt.CommentId,
-                currentStatus
-            );
+            logger.LogWarning("Comment {CommentId} not found in DB", evt.CommentId);
+            return null!;
+        }
+
+        var status = reader.GetString(0);
+        var username = reader.GetString(1);
+        await reader.CloseAsync();
+
+        if (status != "pending")
+        {
+            logger.LogWarning("Comment {CommentId} already {Status}, skipping", evt.CommentId, status);
             return null!;
         }
 
         var score = SentimentAnalyzer.Analyze(evt.Content);
-        logger.LogInformation("Comment {CommentId} sentiment score: {Score}", evt.CommentId, score);
+        logger.LogInformation("Comment {CommentId} score={Score} user={User}", evt.CommentId, score, username);
 
-        var (_, username) = await GetCommentAuthorAsync(pgConn, evt.CommentId);
-
-        await UpdateCommentAsync(pgConn, evt.CommentId, score);
+        await using var updateCmd = db.CreateCommand("""
+            UPDATE "Comments"
+            SET "Status" = 'processed', "SentimentScore" = @score
+            WHERE "CommentId" = @id
+            """);
+        updateCmd.Parameters.AddWithValue("score", score);
+        updateCmd.Parameters.AddWithValue("id", evt.CommentId);
+        await updateCmd.ExecuteNonQueryAsync();
 
         var processedEvent = new CommentProcessedEvent
         {
@@ -64,65 +81,5 @@ public class CommentProcessorFunction(ILogger<CommentProcessorFunction> logger)
         };
 
         return JsonSerializer.Serialize(processedEvent);
-    }
-
-    private static async Task<string> GetCommentStatusAsync(string connectionString, int commentId)
-    {
-        await using var conn = new NpgsqlConnection(connectionString);
-        await conn.OpenAsync();
-        await using var cmd = new NpgsqlCommand(
-            "SELECT \"Status\" FROM \"Comments\" WHERE \"CommentId\" = @id",
-            conn
-        );
-        cmd.Parameters.AddWithValue("id", commentId);
-        var result = await cmd.ExecuteScalarAsync();
-        return result?.ToString() ?? "unknown";
-    }
-
-    private static async Task<(int AuthorId, string Username)> GetCommentAuthorAsync(
-        string connectionString,
-        int commentId
-    )
-    {
-        await using var conn = new NpgsqlConnection(connectionString);
-        await conn.OpenAsync();
-        await using var cmd = new NpgsqlCommand(
-            """
-            SELECT c."AuthorId", p."Username"
-            FROM "Comments" c
-            JOIN "Persons" p ON p."PersonId" = c."AuthorId"
-            WHERE c."CommentId" = @id
-            """,
-            conn
-        );
-        cmd.Parameters.AddWithValue("id", commentId);
-        await using var reader = await cmd.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-        {
-            return (reader.GetInt32(0), reader.GetString(1));
-        }
-
-        return (0, string.Empty);
-    }
-
-    private static async Task UpdateCommentAsync(
-        string connectionString,
-        int commentId,
-        double score
-    )
-    {
-        await using var conn = new NpgsqlConnection(connectionString);
-        await conn.OpenAsync();
-        await using var cmd = new NpgsqlCommand(
-            """
-            UPDATE "Comments"
-            SET "Status" = 'processed', "SentimentScore" = @score
-            WHERE "CommentId" = @id
-            """,
-            conn
-        );
-        cmd.Parameters.AddWithValue("score", score);
-        cmd.Parameters.AddWithValue("id", commentId);
-        await cmd.ExecuteNonQueryAsync();
     }
 }

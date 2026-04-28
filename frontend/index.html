@@ -456,7 +456,9 @@
       .build();
 
     connection.on('CommentProcessed', (data) => {
-      const c = comments.get(data.commentId);
+      console.log('[SignalR] CommentProcessed received:', data, 'map keys:', [...comments.keys()]);
+      const c = comments.get(Number(data.commentId));
+      console.log('[SignalR] Found comment in map:', c);
       if (!c) return;
 
       const latencyMs = data.receivedAtMs - c.postedAtMs;
@@ -499,7 +501,8 @@
 
   function subscribeUser() {
     if (currentUser && connection.state === 'Connected') {
-      connection.invoke('SubscribeToUser', String(currentUser.id || currentUser.username))
+      console.log('[SignalR] Subscribing as user:', currentUser.username);
+      connection.invoke('SubscribeToUser', currentUser.username)
         .catch(e => console.warn('SubscribeToUser failed:', e));
     }
   }
