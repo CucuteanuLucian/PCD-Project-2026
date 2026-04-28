@@ -29,12 +29,15 @@ echo "    PID=$! → log: .logs/serviceA.log"
 # Service B - Sentiment Processor (console)
 echo "[2] Pornire Service B (Sentiment Processor)..."
 cd "$ROOT/src/ServiceBConsole"
+"ConnectionStrings__ServiceBus=$SB_CONN" \
+"ConnectionStrings__DefaultConnection=$PG_CONN" \
 dotnet run > "$LOGS/serviceB.log" 2>&1 &
 echo "    PID=$! → log: .logs/serviceB.log"
 
 # Service C - Notification Service
 echo "[3] Pornire Service C (Notification Service) pe portul 5001..."
 cd "$ROOT/src/NotificationService"
+"ConnectionStrings__ServiceBus=$SB_CONN" \
 dotnet run --urls http://localhost:5001 > "$LOGS/serviceC.log" 2>&1 &
 echo "    PID=$! → log: .logs/serviceC.log"
 
@@ -45,8 +48,8 @@ python3 -m http.server 3000 > "$LOGS/frontend.log" 2>&1 &
 echo "    PID=$! → log: .logs/frontend.log"
 
 echo ""
-echo "=== Asteptare pornire servicii (15 secunde)... ==="
-sleep 15
+echo "=== Asteptare pornire servicii (20 secunde)... ==="
+sleep 20
 
 echo ""
 echo "=== GATA! Deschide browserul la: http://localhost:3000 ==="
@@ -59,6 +62,5 @@ echo ""
 echo "Apasa Ctrl+C pentru a opri toate serviciile."
 echo ""
 
-# Wait and show logs on Ctrl+C
 trap 'echo "Oprire..."; lsof -ti:5000,5001,3000 | xargs kill -9 2>/dev/null; exit' INT
 wait

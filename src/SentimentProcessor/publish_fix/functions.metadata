@@ -1,0 +1,33 @@
+[
+  {
+    "name": "CommentProcessor",
+    "scriptFile": "SentimentProcessor.dll",
+    "entryPoint": "SentimentProcessor.Functions.CommentProcessorFunction.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "message",
+        "direction": "In",
+        "type": "serviceBusTrigger",
+        "queueName": "comments-queue",
+        "connection": "ServiceBusConnection",
+        "cardinality": "One",
+        "properties": {
+          "supportsDeferredBinding": "True"
+        }
+      },
+      {
+        "name": "$return",
+        "direction": "Out",
+        "type": "serviceBus",
+        "queueOrTopicName": "comments-processed",
+        "entityType": "Queue",
+        "connection": "ServiceBusConnection",
+        "properties": {}
+      }
+    ]
+  }
+]
