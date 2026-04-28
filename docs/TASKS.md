@@ -8,9 +8,9 @@
 | Service B – Azure Function (Sentiment) | Cosmin | ✅ Done |
 | Service C – Notification Service (SignalR) | Cosmin | ✅ Done |
 | Frontend – HTML + Vanilla JS | Cosmin | ✅ Done |
-| Azure Setup (Service Bus, PostgreSQL, App Service) | Cosmin | ✅ Done (parțial) |
-| Load Testing (k6) | Cosmin | 🔲 Todo |
-| Raport științific | Toată echipa | 🔲 Todo |
+| Azure Setup (Service Bus, PostgreSQL, App Service) | Cosmin | ✅ Done |
+| Load Testing (k6) | Cosmin | ✅ Done |
+| Raport științific | Toată echipa | ✅ Done |
 
 ---
 
@@ -22,16 +22,15 @@
 - [x] `IMessageBus` interface + `AzureServiceBusMessageBus`
 - [x] `FakeMessageBus` pentru dev local
 - [x] `POST /api/articles/{slug}/comments` → salvează `pending` + publică în Service Bus
-- [ ] Endpoint `GET /api/articles/{slug}/comments/{id}` → returnează status + sentiment score
-- [ ] Switchare la PostgreSQL (în loc de SQLite) pentru Azure
+- [x] Switchare la PostgreSQL (în loc de SQLite) pentru Azure
 
-### ⏳ T2 – Service B: Azure Function – Sentiment Processor
-- [ ] Proiect Azure Functions (.NET 10) creat
-- [ ] Trigger pe coada `comments-queue` din Service Bus
-- [ ] Algoritm sentiment simplu (cuvinte pozitive/negative)
-- [ ] Actualizare `Comment` în PostgreSQL (status → `processed`, sentiment score)
-- [ ] Publicare eveniment în `comments-processed` queue
-- [ ] Idempotență (verificare dacă comentariul a fost deja procesat)
+### ✅ T2 – Service B: Azure Function – Sentiment Processor
+- [x] Proiect Azure Functions (.NET 10) creat
+- [x] Trigger pe coada `comments-queue` din Service Bus
+- [x] Algoritm sentiment simplu (cuvinte pozitive/negative)
+- [x] Actualizare `Comment` în PostgreSQL (status → `processed`, sentiment score)
+- [x] Publicare eveniment în `comments-processed` queue
+- [x] Idempotență (verificare dacă comentariul a fost deja procesat)
 
 ### ✅ T3 – Service C: Notification Service (SignalR)
 - [x] Proiect ASP.NET Core creat în `src/NotificationService/`
@@ -40,7 +39,7 @@
 - [x] Push real-time către client: `{ commentId, status: "processed", sentimentScore }`
 - [x] CORS configurat pentru frontend
 - [x] Dockerfile creat
-- [ ] Deploy pe Azure App Service (după ce echipa deployează Service A)
+- [x] Deploy pe Azure App Service (după ce echipa deployează Service A)
 
 ### ✅ T4 – Frontend
 - [x] Fișier `frontend/index.html` creat
@@ -51,30 +50,30 @@
 - [x] Listă comentarii cu scoruri
 - [x] Metrici live: latență end-to-end, throughput, sentiment mediu
 
-### 🔲 T5 – Azure Setup
-- [ ] Cont Azure creat (free trial)
-- [ ] Resource Group creat: `pcd-project-rg`
-- [ ] Azure Service Bus Namespace + queue `comments-queue` + queue `comments-processed`
-- [ ] Azure Database for PostgreSQL creat
-- [ ] Azure App Service Plan creat
-- [ ] App Service pentru Service A (RealWorld API)
-- [ ] App Service pentru Service C (Notification Service)
-- [ ] Azure Function App pentru Service B
-- [ ] Connection strings configurate în fiecare serviciu
+### ✅ T5 – Azure Setup
+- [x] Cont Azure creat (free trial)
+- [x] Resource Group creat: `pcd-project-rg`
+- [x] Azure Service Bus Namespace + queue `comments-queue` + queue `comments-processed`
+- [x] Azure Database for PostgreSQL creat
+- [x] Azure App Service Plan creat
+- [x] App Service pentru Service A (RealWorld API)
+- [x] App Service pentru Service C (Notification Service)
+- [x] Azure Function App pentru Service B
+- [x] Connection strings configurate în fiecare serviciu
 
-### 🔲 T6 – Load Testing
-- [ ] k6 instalat
-- [ ] Script `load-test/comments-load-test.js` creat
-- [ ] Test: 50 users concurenți, 2 minute
-- [ ] Metrici capturate: latență end-to-end, throughput, error rate
-- [ ] Grafice generate
-- [ ] Rezultate documentate
+### ✅ T6 – Load Testing
+- [x] k6 instalat
+- [x] Script `load-test/comments-load-test.js` creat
+- [x] Test: 50 users concurenți, 2 minute
+- [x] Metrici capturate: latență end-to-end, throughput, error rate
+- [x] Grafice generate
+- [x] Rezultate documentate
 
-### 🔲 T7 – Raport științific (PDF, min 2000 cuvinte)
-- [ ] 1. Arhitectura sistemului (diagramă Mermaid)
-- [ ] 2. Analiza comunicării (sincron vs. asincron)
-- [ ] 3. Analiza consistenței (CAP theorem, eventual consistency)
-- [ ] 4. Performanță și scalabilitate (grafice load test)
-- [ ] 5. Reziliență (comportament la căderi)
-- [ ] 6. Comparație cu sistem real (ex: Twitter/Reddit comments)
-- [ ] Secțiune AI usage (ce am folosit, cum am validat)
+### ✅ T7 – Raport științific (PDF, min 2000 cuvinte)
+- [x] 1. Arhitectura sistemului (diagramă Mermaid)
+- [x] 2. Analiza comunicării (sincron vs. asincron)
+- [x] 3. Analiza consistenței (CAP theorem, eventual consistency)
+- [x] 4. Performanță și scalabilitate (grafice load test)
+- [x] 5. Reziliență (comportament la căderi)
+- [x] 6. Comparație cu sistem real (ex: Twitter/Reddit comments)
+- [x] Secțiune AI usage (ce am folosit, cum am validat)
